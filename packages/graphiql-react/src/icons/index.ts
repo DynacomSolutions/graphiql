@@ -1,4 +1,4 @@
-import { ComponentProps, FC } from 'react';
+import { ComponentProps, createElement, forwardRef } from 'react';
 
 import _ArgumentIcon from './argument.svg';
 import _ChevronDownIcon from './chevron-down.svg';
@@ -31,6 +31,9 @@ import _StarIcon from './star.svg';
 import _StopIcon from './stop.svg';
 import _TrashIcon from './trash.svg';
 import _TypeIcon from './type.svg';
+
+type IconSvgProps = Omit<ComponentProps<'svg'>, 'ref'> &
+  React.RefAttributes<SVGElement> & { title: string };
 
 export const ArgumentIcon = generateIcon(_ArgumentIcon);
 export const ChevronDownIcon = generateIcon(_ChevronDownIcon);
@@ -73,7 +76,19 @@ function generateIcon(
     .replaceAll(/([A-Z])/g, ' $1')
     .trimStart()
     .toLowerCase() + ' icon',
-): FC<ComponentProps<'svg'>> {
-  RawComponent.defaultProps = { title };
-  return RawComponent;
+) {
+  const forwardedComponent = forwardRef<SVGElement, ComponentProps<'svg'>>(
+    (props, ref) =>
+      createElement<IconSvgProps>(RawComponent, {
+        title,
+        ...props,
+        ref,
+      }),
+  );
+
+  forwardedComponent.displayName = title;
+
+  return forwardedComponent;
+
+  // return createElement.bind(null, RawComponent, { title });
 }
